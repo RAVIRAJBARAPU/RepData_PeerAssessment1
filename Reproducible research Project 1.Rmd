@@ -27,7 +27,7 @@ head(data_steps)
 
 ## First Plot
 
-```{r}
+```{r,echo=TRUE}
 library(ggplot2)
 ggplot(data_steps, aes(x = steps)) +
   geom_histogram(fill = "skyblue", binwidth = 1000) +
@@ -51,7 +51,7 @@ data_interval<- data %>% select(steps, interval) %>% na.omit() %>% group_by(inte
 
 ## Second Plot
 
-```{r}
+```{r,echo=TRUE}
 ggplot(data_interval, aes(x=interval, y=steps))+ geom_line(color = "firebrick")
 
 ```
@@ -90,7 +90,7 @@ sum(is.na(meandata))
 
 ## Third Plot
 
-```{r}
+```{r,echo=TRUE}
 # 7.Histogram of the total number of steps taken each day after missing values are imputed
 steps_meandata<- meandata %>% group_by(date) %>% summarize(steps = sum(steps))
 ggplot(steps_meandata, aes(x = steps))+geom_histogram(fill = "skyblue",bins = 20)+
@@ -98,7 +98,7 @@ ggplot(steps_meandata, aes(x = steps))+geom_histogram(fill = "skyblue",bins = 20
 
 ```
 
-```{r}
+```{r,echo=TRUE}
 # 8.Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
 meandata$day <- weekdays(as.Date(meandata$date))
 meandata$type <- ifelse(meandata$day %in% c("Saturday","Sunday"),"weekend","weekday")
