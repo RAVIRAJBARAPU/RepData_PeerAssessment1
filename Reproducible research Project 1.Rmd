@@ -1,0 +1,125 @@
+---
+title: "Reproducible Research Project 1"
+author: "Raviraj"
+date: "March 18, 2018"
+output: html_document
+---
+
+```{r}
+# 1.Code for reading in the dataset and/or processing the data
+data<-read.csv("activity.csv")
+```
+
+Lets see the parameters & few rows of the data
+
+```{r}
+head(data)
+```
+
+It was asked to plot the no of steps taken each day, thus we will first group the given data based on date & summarize the no of steps taken each day
+
+```{r}
+# 2. Histogram of the total number of steps taken each day
+library(dplyr)
+data_steps <- data %>% filter(!is.na(steps)) %>% group_by(date) %>% summarize(steps = sum(steps))
+head(data_steps)
+```
+
+## First Plot
+
+```{r}
+library(ggplot2)
+ggplot(data_steps, aes(x = steps)) +
+  geom_histogram(fill = "skyblue", binwidth = 1000) +
+  labs(title = "Steps per Day Frequency", x = "Steps per day", y = "Frequency")
+```
+
+Lets see Mean & Median of the steps taken each day
+
+```{r}
+# 3. Mean and median number of steps taken each day
+mean(data_steps$steps)
+median(data_steps$steps)
+```
+
+Make a time series plot of the 5-minute interval and the average number of steps taken, averaged across all days.
+
+```{r}
+# 4. Time series plot of the average number of steps taken
+data_interval<- data %>% select(steps, interval) %>% na.omit() %>% group_by(interval) %>% summarize(steps= mean(steps)) 
+```
+
+## Second Plot
+
+```{r}
+ggplot(data_interval, aes(x=interval, y=steps))+ geom_line(color = "firebrick")
+
+```
+
+The 5-minute interval that, on average, contains the maximum number of steps
+
+```{r}
+# 5. The 5-minute interval that, on average, contains the maximum number of steps
+data_interval[which.max(data_interval$steps),]
+
+```
+
+Imputing missing data with mean
+Lets see the total no of missing values
+```{r}
+missingVals <- sum(is.na(data))
+```
+Lets see the missing parameters
+```{r}
+names(which(sapply(data, anyNA)))
+```
+
+Replace the missed in column with the mean values
+
+```{r}
+# 6. Code to describe and show a strategy for imputing missing data
+# imputing with mean values
+replacewithmean <- function(x) replace(x, is.na(x), mean(x, na.rm = TRUE))
+meandata <- data%>% group_by(interval) %>% mutate(steps= replacewithmean(steps))
+``` 
+Check the new data after replacing with the mean values
+```{r}
+head(meandata)
+sum(is.na(meandata))
+```
+
+## Third Plot
+
+```{r}
+# 7.Histogram of the total number of steps taken each day after missing values are imputed
+steps_meandata<- meandata %>% group_by(date) %>% summarize(steps = sum(steps))
+ggplot(steps_meandata, aes(x = steps))+geom_histogram(fill = "skyblue",bins = 20)+
+        labs(title = "Steps per Day Frequency", x = "Steps per day", y = "Frequency")
+
+```
+
+```{r}
+# 8.Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
+meandata$day <- weekdays(as.Date(meandata$date))
+meandata$type <- ifelse(meandata$day %in% c("Saturday","Sunday"),"weekend","weekday")
+data_plot <- aggregate(meandata$steps, 
+                       by=list(meandata$type, 
+                               meandata$day, meandata$interval), mean)
+colnames(data_plot)<-c("Type","Day","Interval","Steps")
+library(lattice)
+xyplot(Steps~Interval|Type, data=data_plot, type="l",  layout = c(1,2),
+       main="Average Steps per Interval Based on Type of Day", 
+       ylab="Average Number of Steps", xlab="Interval")
+```
+
+
+
+
+
+
+
+
+
+
+
+
